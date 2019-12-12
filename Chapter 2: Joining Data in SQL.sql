@@ -470,19 +470,171 @@ USING (CODE)
 WHERE countries.name LIKE 'V%' OR countries.name IS NULL
 ORDER BY countries.name;
 
-#Instruction 1
-#Instruction 2
-#Instruction 3
+#FULL JOIN(3)
+#Complete a full join with countries on the left and languages on the right.
+#Next, full join this result with currencies on the right.
+#Use LIKE to choose the Melanesia and Micronesia regions (Hint: 'M%esia').
+#Select the fields corresponding to the country name AS country, region, language name AS language, and basic and fractional units of currency.
 
-#Instruction 1
-#Instruction 2
-#Instruction 3
-#Instruction 1
-#Instruction 2
-#Instruction 3
-#Instruction 1
-#Instruction 2
-#Instruction 3
+SELECT country.name AS country, region, language.name AS language,
+       cur.basic_unit, cur.frac_unit
+FROM countries AS country
+FULL JOIN languages AS language
+USING (code)
+FULL JOIN currencies AS cur
+USING (code)
+WHERE region LIKE 'M%esia';
+
+#CROSS JOIN- A table of two cities
+#Create the cross join as described above. (Recall that cross joins do not use ON or USING.)
+#Make use of LIKE and Hyder% to choose Hyderabad in both countries.
+#Select only the city name AS city and language name AS language.
+
+#Instruction 1-Create the cross join as described above. (Recall that cross joins do not use ON or USING.)
+#Make use of LIKE and Hyder% to choose Hyderabad in both countries.
+#Select only the city name AS city and language name AS language.
+
+-- 4. Select fields
+SELECT c.name AS city, l.name AS language
+FROM cities AS c
+CROSS JOIN languages AS l
+WHERE c.name LIKE 'Hyder%';
+
+#Instruction 2-Use an inner join instead of a cross join. Think about what the difference will be in the results for this inner join result and the one for the cross join.
+SELECT c.name AS city, l.name AS language
+FROM cities AS c
+INNER JOIN languages AS l
+ON c.country_code = l.code
+WHERE c.name LIKE 'Hyder%';
+
+#OUTER CHALLENGE
+
+#Instruction 1-Select country name AS country, region, and life expectancy AS life_exp.
+#Make sure to use LEFT JOIN, WHERE, ORDER BY, and LIMIT.
+
+SELECT co.name AS country, region, p.life_expectancy AS life_exp
+FROM countries AS co
+LEFT JOIN populations AS p
+ON co.code=p.country_code
+WHERE p.year = 2010
+ORDER BY life_exp
+LIMIT 5;
+
+##2.3-Set theory clauses
+
+#UNION
+#Near query result to the right, you will see two new tables with names economies2010 and economies2015.
+
+#Instruction 1- Combine these two tables into one table containing all of the fields in economies2010. The economies table is also included for reference.
+#Sort this resulting single table by country code and then by year, both in ascending order.
+
+SELECT *
+-- 2010 table will be on top
+FROM economies2010
+-- which set theory clause?
+UNION
+-- pick specified columns from 2015 table
+SELECT *
+-- 2015 table on the bottom
+FROM economies2015
+-- order accordingly
+ORDER BY code, year;
+
+#UNION (2)
+
+#Determine all (non-duplicated) country codes in either the cities or the currencies table. The result should be a table with only one field called country_code.
+#Sort by country_code in alphabetical order.
+
+
+SELECT country_code
+FROM cities
+UNION
+SELECT code
+FROM currencies
+ORDER BY country_code;
+
+#UNION ALL
+#As you saw, duplicates were removed from the previous two exercises by using UNION.To include duplicates, you can use UNION ALL.
+
+#Instruction- Determine all combinations (include duplicates) of country code and year that exist in either the economies or the populations tables. Order by code then year.
+#The result of the query should only have two columns/fields. Think about how many records this query should result in.
+#You'll use code very similar to this in your next exercise after the video. Make note of this code after completing it.
+
+SELECT code, year
+FROM economies
+UNION ALL
+SELECT country_code, year
+FROM populations
+ORDER BY code, year;
+
+#INTERSECT
+
+#Repeat the previous UNION ALL exercise, this time looking at the records in common for country code and year for the economies and populations tables.
+
+#Instruction- Again, order by code and then by year, both in ascending order.
+#Note the number of records here (given at the bottom of query result) compared to the similar UNION ALL query result (814 records).
+
+SELECT code, year
+FROM economies
+INTERSECT
+SELECT country_code, year
+FROM populations
+ORDER BY code, year;
+
+#EXCEPT
+#Get the names of cities in cities which are not noted as capital cities in countries as a single field result.
+#Note that there are some countries in the world that are not included in the countries table, which will result in some cities not being labeled as capital cities when in fact they are.
+
+#Instruction-Order the resulting field in ascending order. Can you spot the city/cities that are actually capital cities which this query misses?
+SELECT city.name
+FROM cities AS city
+EXCEPT
+SELECT country.capital
+FROM countries AS country
+ORDER BY name;
+
+#EXCEPT (2)
+#Order by capital in ascending order.
+#The cities table contains information about 236 of the world's most populous cities. The result of your query may surprise you in terms of the number of capital cities that DO NOT appear in this list!
+
+SELECT country.capital
+FROM countries AS country
+EXCEPT
+SELECT city.name
+FROM cities AS city
+ORDER BY capital;
+
+# SEMI-JOIN
+
+#Instruction 1-Flash back to our Intro to SQL for Data Science course and begin by selecting all country codes in the Middle East as a single field result using SELECT, FROM, and WHERE.
+
+SELECT country.code
+FROM countries AS country
+WHERE country.region = 'Middle East';
+
+#Instruction 2- Comment out the answer to the previous tab by surrounding it in /* and */. You'll come back to it!
+#Below the commented code, select only unique languages by name appearing in the languages table.
+#Order the resulting single field table by name in ascending order.
+
+SELECT code
+  FROM countries
+WHERE region = 'Middle East';
+
+SELECT DISTINCT lang.name
+FROM languages AS lang
+ORDER BY lang.name;
+
+#Instruction 3-Now combine the previous two queries into one query:
+#Add a WHERE IN statement to the SELECT DISTINCT query, and use the commented out query from the first instruction in there. That way, you can determine the unique languages spoken in the Middle East.
+#Carefully review this result and its code after completing it. It serves as a great example of subqueries, which are the focus of Chapter 4.
+SELECT DISTINCT name
+FROM languages
+WHERE code IN
+  (SELECT code
+   FROM countries
+   WHERE region = 'Middle East')
+ORDER BY name;
+
 #Instruction 1
 #Instruction 2
 #Instruction 3
